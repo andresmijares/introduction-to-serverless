@@ -1,13 +1,13 @@
 {
   "name": "intro-to-serverless",
   "version": "1.0.0",
-  "description": "",
+  "description": "Some dummy material to introduce serverless to students",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": ["serverless", "graphql", "javascript", "mediocre.af"],
+  "author": "Andres Mijares",
   "license": "ISC",
   "devDependencies": {
     "eslint": "^4.19.1",
@@ -18,7 +18,6 @@
   "dependencies": {
     "co": "^4.6.0",
     "graphql": "^0.13.2",
-    "ramda": "^0.25.0",
     "uuid": "^3.2.1"
   }
 }
