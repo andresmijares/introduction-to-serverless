@@ -5,7 +5,6 @@ const uuid = require('uuid')
 const AWS = require('aws-sdk')
 AWS.config.region = 'us-east-1'
 const dynamodb = new AWS.DynamoDB.DocumentClient()
-// const stage = process.env.stage
 const tableName = process.env.tableName
 
 const putToDynamoDB = co.wrap(function * (body, prop, table = tableName) {
@@ -20,7 +19,7 @@ const putToDynamoDB = co.wrap(function * (body, prop, table = tableName) {
       statusCode: 200,
       body: JSON.stringify({
         [prop]: body[prop]
-      }),
+      })
     }
   } catch (e) {
     console.log(`Error`, e)
@@ -29,12 +28,12 @@ const putToDynamoDB = co.wrap(function * (body, prop, table = tableName) {
       body: JSON.stringify({
         message: 'Something went wrong'
       })
-    } 
+    }
   }
 })
 
 module.exports.handler = co.wrap(function * (event, context, callback) {
   const body = JSON.parse(event.body)
   const response = yield putToDynamoDB(body, 'id')
-  callback(null, response);
+  callback(null, response)
 })
