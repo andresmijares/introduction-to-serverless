@@ -1,0 +1,81 @@
+service: intro-to-serverless
+
+plugins:
+  - serverless-pseudo-parameters
+  - serverless-iam-roles-per-function
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  serverless-iam-roles-per-function:
+    defaultInherit: true
+
+provider:
+  name: aws
+  runtime: nodejs6.10
+
+functions:
+  graphql:
+    handler: functions/graphql.handler
+    events:
+      - http:
+          path: /graphql
+          method: post
+    environment:
+      tableName: ${self:custom.stage}_orders_table
+      tableUsers: ${self:custom.stage}_users
+    iamRoleStatements:
+      - Effect: Allow
+        Action: dynamodb:scan
+        Resource: arn:aws:dynamodb:#{AWS::Region}:#{AWS::AccountId}:table/${self:custom.stage}_orders_table
+      - Effect: Allow
+        Action: dynamodb:GetItem
+        Resource: arn:aws:dynamodb:#{AWS::Region}:#{AWS::AccountId}:table/${self:custom.stage}_users
+
+  place_order:
+    handler: functions/place_order.handler
+    events:
+      - http:
+          path: /order
+          method: post
+    environment:
+      stage: ${self:custom.stage}
+      tableName: ${self:custom.stage}_orders_table
+    iamRoleStatements:
+      - Effect: Allow
+        Action: dynamodb:PutItem
+        Resource: arn:aws:dynamodb:#{AWS::Region}:#{AWS::AccountId}:table/${self:custom.stage}_orders_table
+
+  get_order:
+    handler: functions/get_order.handler
+    events:
+      - http:
+          path: /order
+          method: get
+    environment:
+      stage: ${self:custom.stage}
+      tableName: ${self:custom.stage}_orders_table
+      userTable: ${self:custom.stage}_users
+    iamRoleStatements:
+      - Effect: Allow
+        Action: execute-api:Invoke
+        Resource: arn:aws:execute-api:#{AWS::Region}:#{AWS::AccountId}:*/*/GET/order
+      - Effect: Allow
+        Action: dynamodb:GetItem
+        Resource: arn:aws:dynamodb:#{AWS::Region}:#{AWS::AccountId}:table/${self:custom.stage}_orders_table
+
+resources:
+  Resources:
+    ordersTable: # CammelCase
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.stage}_orders_table #dev_orders_table
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+    
